@@ -31,6 +31,10 @@ export class DatabaseAgent {
   }
 
   static async initialize() {
+    if (Config.IS_DOCKER_PRODUCT && Config.DOCKER_PRODUCT_MONGO === false) {
+      return
+    }
+
     const client = new MongoClient(Config.DB_URI)
 
     let retryDelay = 1000 // 1s

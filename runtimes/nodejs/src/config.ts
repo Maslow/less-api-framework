@@ -120,4 +120,12 @@ export default class Config {
   static get CUSTOM_DEPENDENCY_BASE_PATH(): string {
     return process.env.CUSTOM_DEPENDENCY_BASE_PATH || '/tmp/custom_dependency'
   }
+
+  static get IS_DOCKER_PRODUCT(): boolean {
+    return process.env.DOCKER_PRODUCT === 'true'
+  }
+
+  static get DOCKER_PRODUCT_MONGO(): boolean {
+    return process.env.DOCKER_PRODUCT_MONGO === 'true'
+  }
 }

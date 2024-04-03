@@ -6,12 +6,31 @@ import { InitHook } from '../init-hook'
 import { DatabaseChangeStream } from '../database-change-stream'
 import { FunctionModule } from './module'
 import { ChangeStreamDocument } from 'mongodb'
+import path from 'path'
+import { promises as fs } from 'fs'
+import Config from '../../config'
+
+const WORKSPACE_PATH = path.join(__dirname, '../../../cloud_functions')
 
 export class FunctionCache {
   private static cache: Map<string, ICloudFunctionData> = new Map()
 
   static async initialize(): Promise<void> {
     logger.info('initialize function cache')
+
+    if (Config.IS_DOCKER_PRODUCT) {
+      await FunctionCache.initializeFromLocal()
+    } else {
+      await FunctionCache.initializeFromDB()
+    }
+
+    logger.info('Function cache initialized.')
+
+    // invoke init function
+    InitHook.invoke()
+  }
+
+  private static async initializeFromDB(): Promise<void> {
     const funcs = await DatabaseAgent.db
       .collection<ICloudFunctionData>(CLOUD_FUNCTION_COLLECTION)
       .find()
@@ -25,10 +44,26 @@ export class FunctionCache {
       CLOUD_FUNCTION_COLLECTION,
       FunctionCache.streamChange.bind(this),
     )
-    logger.info('Function cache initialized.')
+  }
 
-    // invoke init function
-    InitHook.invoke()
+  private static async initializeFromLocal(): Promise<void> {
+    const stack = [WORKSPACE_PATH]
+
+    while (stack.length > 0) {
+      const currentDir = stack.pop()
+      const entries = await fs.readdir(currentDir, { withFileTypes: true })
+
+      for (const entry of entries) {
+        const fullPath = path.join(currentDir, entry.name)
+        if (entry.isDirectory()) {
+          stack.push(fullPath)
+        } else if (entry.isFile()) {
+          const fileContent = await fs.readFile(fullPath, 'utf8')
+          const iCloudFunctionData: ICloudFunctionData = JSON.parse(fileContent)
+          FunctionCache.cache.set(iCloudFunctionData.name, iCloudFunctionData)
+        }
+      }
+    }
   }
 
   /**

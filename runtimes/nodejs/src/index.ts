@@ -19,13 +19,13 @@ import xmlparser from 'express-xml-bodyparser'
 
 // init static method of class
 import './support/cloud-sdk'
-import storageServer from './storage-server'
 import { DatabaseChangeStream } from './support/database-change-stream'
 import url from 'url'
 
 import { LspWebSocket } from './support/lsp'
 import { createCloudSdk } from './support/cloud-sdk'
 import { FunctionCache } from './support/engine'
+import storageServer from './storage-server'
 
 require('source-map-support').install({
   emptyCacheBetweenOperations: true,
@@ -38,9 +38,14 @@ globalThis.createCloudSdk = createCloudSdk
 
 const app = express()
 
-DatabaseAgent.ready.then(() => {
-  DatabaseChangeStream.initialize()
-})
+if (Config.IS_DOCKER_PRODUCT) {
+  FunctionCache.initialize()
+  storageServer.close()
+} else {
+  DatabaseAgent.ready.then(() => {
+    DatabaseChangeStream.initialize()
+  })
+}
 
 app.use(
   cors({
@@ -123,9 +128,10 @@ process.on('SIGINT', gracefullyExit)
 
 async function gracefullyExit() {
   await DatabaseAgent.accessor.close()
-  await server.close()
-  await storageServer.close()
-
+  server.close()
+  if (!Config.IS_DOCKER_PRODUCT) {
+    storageServer.close()
+  }
   logger.info('process gracefully exited!')
   process.exit(0)
 }

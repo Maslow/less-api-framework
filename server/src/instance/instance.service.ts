@@ -9,6 +9,7 @@ import { Injectable, Logger } from '@nestjs/common'
 import { GetApplicationNamespace } from 'src/utils/getter'
 import { LABEL_KEY_APP_ID, MB, ServerConfig } from '../constants'
 import { StorageService } from '../storage/storage.service'
+import { RuntimeDomainService } from 'src/gateway/runtime-domain.service'
 import { DatabaseService } from 'src/database/database.service'
 import { ClusterService } from 'src/region/cluster/cluster.service'
 import { ApplicationWithRelations } from 'src/application/entities/application'
@@ -16,6 +17,7 @@ import { ApplicationService } from 'src/application/application.service'
 import * as assert from 'assert'
 import { CloudBinBucketService } from 'src/storage/cloud-bin-bucket.service'
 import { DedicatedDatabaseService } from 'src/database/dedicated-database/dedicated-database.service'
+import { RuntimeDomain } from 'src/gateway/entities/runtime-domain'
 
 @Injectable()
 export class InstanceService {
@@ -28,6 +30,7 @@ export class InstanceService {
     private readonly dedicatedDatabaseService: DedicatedDatabaseService,
     private readonly applicationService: ApplicationService,
     private readonly cloudbin: CloudBinBucketService,
+    private readonly runtimeDomainService: RuntimeDomainService,
   ) {}
 
   public async create(appid: string) {
@@ -262,6 +265,9 @@ export class InstanceService {
     }
 
     const storage = await this.storageService.findOne(appid)
+    const runtimeDomain: RuntimeDomain = await this.runtimeDomainService.create(
+      appid,
+    )
     const NODE_MODULES_PUSH_URL =
       await this.cloudbin.getNodeModulesCachePushUrl(appid)
 
@@ -272,6 +278,9 @@ export class InstanceService {
       { name: 'DB_URI', value: dbConnectionUri },
       { name: 'APP_ID', value: appid }, // deprecated, use `APPID` instead
       { name: 'APPID', value: appid },
+      { name: 'RUNTIME_DOMAIN', value: runtimeDomain.domain },
+      { name: 'RUNTIME_INIT_IMAGE', value: app.runtime.image.init },
+      { name: 'RUNTIME_MAIN_IMAGE', value: app.runtime.image.main },
       { name: 'OSS_ACCESS_KEY', value: storage.accessKey },
       { name: 'OSS_ACCESS_SECRET', value: storage.secretKey },
       {

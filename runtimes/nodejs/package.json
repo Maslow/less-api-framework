@@ -52,6 +52,7 @@
     "nodemailer": "^6.6.3",
     "pako": "^2.1.0",
     "source-map-support": "^0.5.21",
+    "tar": "^6.2.1",
     "typescript-language-server": "^3.3.2",
     "validator": "^13.7.0",
     "vscode-languageserver": "^9.0.1",
