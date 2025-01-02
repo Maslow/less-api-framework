@@ -62,9 +62,9 @@ const storageServer = http.createServer(
 
     try {
       const proxyReqUrl = new URL(Config.OSS_INTERNAL_ENDPOINT)
-
+      const reqHost = new URL(`${req.headers['x-forwarded-proto']}://${req.headers.host}`)
       const path = await websiteHostingPathHandler(
-        req.headers.host || '',
+        reqHost.hostname || '',
         req.url || '',
       )
 
