@@ -1,5 +1,7 @@
 {
   "CollectionPanel": {
+    "Search": "Search collections...",
+    "NoCollections": "No collections available",
     "AddCollection": "Create Collection",
     "AddData": "Add Data",
     "AddIndex": "Add Index",

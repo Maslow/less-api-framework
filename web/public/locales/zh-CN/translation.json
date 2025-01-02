@@ -1,5 +1,7 @@
 {
   "CollectionPanel": {
+    "Search": "搜索集合...",
+    "NoCollections": "暂无可选集合",
     "AddCollection": "新建集合",
     "AddData": "添加数据",
     "AddIndex": "添加索引",

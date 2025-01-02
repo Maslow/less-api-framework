@@ -13,7 +13,6 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  Select,
   useColorMode,
   useDisclosure,
   VStack,
@@ -22,6 +21,7 @@ import clsx from "clsx";
 import { t } from "i18next";
 
 import JSONEditor from "@/components/Editor/JSONEditor";
+import SearchableSelect from "@/components/SearchableSelect";
 import { COLOR_MODE } from "@/constants";
 
 import { useCollectionListQuery, useCreateRulesMutation } from "../../service";
@@ -101,22 +101,20 @@ const AddRulesModal = (props: {
                 <FormLabel htmlFor="collectionName">
                   {t("CollectionPanel.SelectCollection")}
                 </FormLabel>
-                <Select
+                <SearchableSelect
                   {...register("collectionName", {
                     required: "collectionName is required",
                   })}
-                  placeholder={collectionListQuery?.data?.data?.length ? undefined : "暂无可选集合"}
+                  options={collectionListQuery?.data?.data || []}
+                  placeholder={
+                    collectionListQuery?.data?.data?.length
+                      ? undefined
+                      : (t("CollectionPanel.NoCollections") as string)
+                  }
                   id="collectionName"
                   variant="filled"
-                >
-                  {(collectionListQuery?.data?.data || []).map((item: any) => {
-                    return (
-                      <option key={item.name} value={item.name}>
-                        {item.name}
-                      </option>
-                    );
-                  })}
-                </Select>
+                  error={!!errors?.collectionName}
+                />
                 <FormErrorMessage>
                   {errors.collectionName && errors.collectionName.message}
                 </FormErrorMessage>
