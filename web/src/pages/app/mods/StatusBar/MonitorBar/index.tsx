@@ -50,7 +50,7 @@ export default function MonitorBar() {
 
   const allDataLoaded = results.every((result) => result.isSuccess);
   const instantMonitorData = results[0].data?.data;
-  const resourceData = results[1].data?.data;
+  const resourceData = results[0].data?.data;
   useEffect(() => {
     if (allDataLoaded) {
       const { cpuUsage, memoryUsage, storageUsage } = instantMonitorData || {};
@@ -92,7 +92,7 @@ export default function MonitorBar() {
     setResources([
       {
         label: `CPU`,
-        percent: (uniformCPU(getAverage(instantData.cpuUsage)) / limitCPU) * 100,
+        percent: uniformCPU(getAverage(instantData.cpuUsage)) * 100,
         color: "#47C8BF",
       },
       {
